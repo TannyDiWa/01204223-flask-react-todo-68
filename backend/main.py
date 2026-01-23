@@ -30,62 +30,51 @@ class TodoItem(db.Model):
 with app.app_context():
     db.create_all()
 
-todo_list = [
-    { "id": 1,
-      "title": 'Learn Flask',
-      "done": True },
-    { "id": 2,
-      "title": 'Build a Flask App',
-      "done": False },
+INITIAL_TODOS = [
+    TodoItem(title='Learn Flask'),
+    TodoItem(title='Build a Flask App'),
 ]
+
+with app.app_context():
+    if TodoItem.query.count() == 0:
+         for item in INITIAL_TODOS:
+             db.session.add(item)
+         db.session.commit()
 
 @app.route('/api/todos/', methods=['GET'])
 def get_todos():
-    return jsonify(todo_list)
+    todos = TodoItem.query.all()
+    return jsonify([todo.to_dict() for todo in todos])
 
 def new_todo(data):
-    if len(todo_list) == 0:
-        id = 1
-    else:
-        id = 1 + max([todo['id'] for todo in todo_list])
-
-    if 'title' not in data:
-        return None
+    return TodoItem(title=data['title'], 
+                    done=data.get('done', False))
     
-    return {
-        "id": id,
-        "title": data['title'],
-        "done": getattr(data, 'done', False),
-    }
-
+    
 @app.route('/api/todos/', methods=['POST'])
 def add_todo():
     data = request.get_json()
     todo = new_todo(data)
     if todo:
-        todo_list.append(todo)
-        return jsonify(todo)
+        db.session.add(todo) 
+        db.session.commit() 
+        return jsonify(todo.to_dict()) 
     else:
-        # return http response code 400 for bad requests
         return (jsonify({'error': 'Invalid todo data'}), 400)  
     
 
 @app.route('/api/todos/<int:id>/toggle/', methods=['PATCH'])
 def toggle_todo(id):
-    todos = [todo for todo in todo_list if todo['id'] == id]
-    if not todos:
-        return (jsonify({'error': 'Todo not found'}), 404)
-    todo = todos[0]
-    todo['done'] = not todo['done']
-    return jsonify(todo)
+    todo = TodoItem.query.get_or_404(id)
+    todo.done = not todo.done
+    db.session.commit()
+    return jsonify(todo.to_dict())
 
 
 @app.route('/api/todos/<int:id>/', methods=['DELETE'])
 def delete_todo(id):
-    global todo_list
-    todos = [todo for todo in todo_list if todo['id'] == id]
-    if not todos:
-        return (jsonify({'error': 'Todo not found'}), 404)
-    todo_list = [todo for todo in todo_list if todo['id'] != id]
+    todo = TodoItem.query.get_or_404(id)
+    db.session.delete(todo)
+    db.session.commit()
     return jsonify({'message': 'Todo deleted successfully'})
 
