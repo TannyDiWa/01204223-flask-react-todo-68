@@ -48,5 +48,30 @@ def delete_todo(id):
     db.session.commit()
     return jsonify({'message': 'Todo deleted successfully'})
 
+@app.route('/api/todos/<int:todo_id>/comments/', methods=['POST'])
+def add_comment(todo_id):
+    # ตรวจสอบว่ามี Todo นี้อยู่จริงไหม
+    todo = TodoItem.query.get_or_404(todo_id)
+    
+    data = request.get_json()
+    if not data or 'message' not in data:
+        return jsonify({"error": "Message is required"}), 400
+
+    # สร้าง Comment ใหม่
+    new_comment = Comment(message=data['message'], todo_id=todo.id)
+    db.session.add(new_comment)
+    db.session.commit()
+    
+    return jsonify(new_comment.to_dict()), 201
+
+@app.route('/api/todos/<int:todo_id>/comments', methods=['POST'])
+def add_comment_v2(todo_id):
+    data = request.get_json()
+    todo = TodoItem.query.get_or_404(todo_id)
+    comment = Comment(message=data['message'], todo=todo)
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify(comment.to_dict()), 201
+
 if __name__ == '__main__':
     app.run(debug=True)

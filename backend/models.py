@@ -21,7 +21,7 @@ class TodoItem(db.Model):
             "id": self.id,
             "title": self.title,
             "done": self.done,
-            "comments": [c.to_dict() for c in self.comments]
+            "comments": [comment.to_dict() for comment in self.comments]
         }
 
 class Comment(db.Model):
