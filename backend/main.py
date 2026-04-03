@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import os
 from flask_cors import CORS
 from flask_migrate import Migrate
 # Import db และ class ต่างๆ จากไฟล์ models.py
@@ -9,13 +10,13 @@ import click
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///todos.db')
 
 # เชื่อม db เข้ากับ app (แก้อาการ RuntimeError)
 db.init_app(app)
 migrate = Migrate(app, db)
 
-app.config['JWT_SECRET_KEY'] = 'fdsjkfjioi2rjshr2345hrsh043j5oij5545'
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'fdsjkfjioi2rjshr2345hrsh043j5oij5545')
 jwt = JWTManager(app)
 
 # สร้าง Table และข้อมูลเริ่มต้น
