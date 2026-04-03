@@ -14,14 +14,19 @@ const TodoItem = ({ todo, toggleDone, deleteTodo, addNewComment }) => {
       </div>
 
       {/* ส่วนแสดงรายการ Comments */}
-      {todo.comments && todo.comments.length > 0 && (
-        <ul className="comment-list">
-          {todo.comments.map(comment => (
-            <li key={comment.id} className="comment-text">
-              {comment.message}
-            </li>
-          ))}
-        </ul>
+      {todo.comments && todo.comments.length > 0 ? (
+        <>
+          <p>{todo.comments.length} comments</p>
+          <ul className="comment-list">
+            {todo.comments.map(comment => (
+              <li key={comment.id} className="comment-text">
+                {comment.message}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p>No comments</p>
       )}
 
       {/* ส่วนฟอร์มสำหรับเพิ่ม Comment ใหม่ */}
